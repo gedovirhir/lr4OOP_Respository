@@ -29,6 +29,8 @@ class __storageList__(ABC): #снаружи наше "хранилище" вед
         pass
     def deleteIndex(self, index): #удаление элемента по индексу
         pass
+    def deleteNode(self, node):
+        pass
     def clear(self): #очистка списка
         pass 
 
@@ -37,6 +39,12 @@ class Node(object):
         self.key = x
         self.next = None
         self.prev = v
+    def deleteThis(self):
+        if self.prev:
+            self.prev.next = self.next
+        if self.next:
+            self.next.prev = self.prev
+        del self
 
 class CCircleStorage(__storageList__):
     def __init__(self):
@@ -96,11 +104,18 @@ class CCircleStorage(__storageList__):
             return
         lastNode = self.getNode(index)
         
-        if lastNode.next is not None:
-            lastNode.next.prev = lastNode.prev
-        lastNode.prev.next = lastNode.next
+        lastNode.deleteThis()
 
         del lastNode
+        self.len -= 1
+
+    def deleteNode(self, node):
+        if node is self.head:
+            self.head = node.next
+            node.deleteThis()
+            self.len -= 1
+            return
+        node.deleteThis()
         self.len -= 1
 
     def clear(self):
@@ -119,6 +134,13 @@ class CCircleStorage(__storageList__):
             prevNode = prevNode.prev
     def inclusiveSelect(self, node):
         node.key.selected = True
+    def deleteSelected(self):
+        someNode = self.head
+        for i in range(self.len):
+            if someNode.key.selected:
+                self.deleteNode(someNode)
+            someNode = someNode.next
+
 
     
 
@@ -201,6 +223,9 @@ class form1(System.Windows.Forms.Form):
     def Form_KeyDown(self, sender, args):
         if args.KeyCode == WinForm.Keys.ControlKey:
             self.CtrlPressed = True
+        if args.KeyCode == WinForm.Keys.Delete:
+            self.CircleStorage.deleteSelected()
+            self.drawAllCircles()
     def Form_KeyUp(self, sender, args):
         if args.KeyCode == WinForm.Keys.ControlKey:
             self.CtrlPressed = False
